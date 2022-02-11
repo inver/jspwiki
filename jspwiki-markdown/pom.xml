@@ -22,7 +22,7 @@
   <parent>
     <groupId>org.apache.jspwiki</groupId>
     <artifactId>jspwiki-builder</artifactId>
-    <version>2.11.1-SNAPSHOT</version>
+    <version>2.11.2-SNAPSHOT</version>
   </parent>
 
   <artifactId>jspwiki-markdown</artifactId>
@@ -53,7 +53,22 @@
 
     <dependency>
       <groupId>com.vladsch.flexmark</groupId>
+      <artifactId>flexmark-ext-attributes</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.vladsch.flexmark</groupId>
+      <artifactId>flexmark-ext-definition</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.vladsch.flexmark</groupId>
       <artifactId>flexmark-ext-footnotes</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.vladsch.flexmark</groupId>
+      <artifactId>flexmark-ext-tables</artifactId>
     </dependency>
 
     <dependency>

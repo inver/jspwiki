@@ -68,9 +68,18 @@ import org.apache.wiki.util.ClassUtil;
 import org.apache.wiki.util.FileUtil;
 import org.apache.wiki.util.TextUtil;
 
-import java.io.*;
-import java.lang.reflect.Constructor;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -318,9 +327,7 @@ public class LuceneSearchProvider implements SearchProvider {
 
     private Analyzer getLuceneAnalyzer() throws ProviderException {
         try {
-            final Class< ? > clazz = ClassUtil.findClass( "", m_analyzerClass );
-            final Constructor< ? > constructor = clazz.getConstructor();
-            return ( Analyzer )constructor.newInstance();
+            return ClassUtil.buildInstance( m_analyzerClass );
         } catch( final Exception e ) {
             final String msg = "Could not get LuceneAnalyzer class " + m_analyzerClass + ", reason: ";
             log.error( msg, e );
@@ -338,16 +345,14 @@ public class LuceneSearchProvider implements SearchProvider {
      *  @throws IOException If there's an indexing problem
      */
     protected Document luceneIndexPage( final Page page, final String text, final IndexWriter writer ) throws IOException {
-        if( log.isDebugEnabled() ) {
-            log.debug( "Indexing " + page.getName() + "..." );
-        }
-        
+        log.debug( "Indexing {}...", page.getName() );
+
         // make a new, empty document
         final Document doc = new Document();
-
         if( text == null ) {
             return doc;
         }
+
         final String indexedText = text.replace( "__", " " ); // be nice to Language Analyzers - cfr. JSPWIKI-893
 
         // Raw name is the keyword we'll use to refer to this document for updates.

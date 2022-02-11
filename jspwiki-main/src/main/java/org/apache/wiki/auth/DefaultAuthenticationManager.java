@@ -36,6 +36,7 @@ import org.apache.wiki.auth.login.WikiCallbackHandler;
 import org.apache.wiki.event.WikiEventListener;
 import org.apache.wiki.event.WikiEventManager;
 import org.apache.wiki.event.WikiSecurityEvent;
+import org.apache.wiki.util.ClassUtil;
 import org.apache.wiki.util.TextUtil;
 import org.apache.wiki.util.TimedCounterList;
 
@@ -45,7 +46,6 @@ import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.lang.reflect.InvocationTargetException;
 import java.security.Principal;
 import java.util.Collections;
 import java.util.HashMap;
@@ -123,7 +123,7 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
         // Look up the LoginModule class
         final String loginModuleClassName = TextUtil.getStringProperty( props, PROP_LOGIN_MODULE, DEFAULT_LOGIN_MODULE );
         try {
-            m_loginModuleClass = ( Class< ? extends LoginModule > )Class.forName( loginModuleClassName );
+            m_loginModuleClass = ClassUtil.findClass( "", loginModuleClassName );
         } catch( final ClassNotFoundException e ) {
             log.error( e.getMessage(), e );
             throw new WikiException( "Could not instantiate LoginModule class.", e );
@@ -172,7 +172,7 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
                 principals = authenticationMgr.doJAASLogin( CookieAuthenticationLoginModule.class, handler, options );
             }
 
-            // If the container logged the user in successfully, tell the Session (and add all of the Principals)
+            // If the container logged the user in successfully, tell the Session (and add all the Principals)
             if ( principals.size() > 0 ) {
                 fireEvent( WikiSecurityEvent.LOGIN_AUTHENTICATED, getLoginPrincipal( principals ), session );
                 for( final Principal principal : principals ) {
@@ -274,9 +274,7 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
 
         final HttpSession session = request.getSession();
         final String sid = ( session == null ) ? "(null)" : session.getId();
-        if( log.isDebugEnabled() ) {
-            log.debug( "Invalidating Session for session ID=" + sid );
-        }
+        log.debug( "Invalidating Session for session ID= {}", sid );
         // Retrieve the associated Session and clear the Principal set
         final Session wikiSession = Wiki.session().find( m_engine, request );
         final Principal originalPrincipal = wikiSession.getLoginPrincipal();
@@ -320,8 +318,8 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
         // Instantiate the login module
         final LoginModule loginModule;
         try {
-            loginModule = clazz.getDeclaredConstructor().newInstance();
-        } catch( final InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e ) {
+            loginModule = ClassUtil.buildInstance( clazz );
+        } catch( final ReflectiveOperationException e ) {
             throw new WikiSecurityException( e.getMessage(), e );
         }
 
@@ -411,17 +409,13 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
             // Test the Authorizer
             if( authorizer.isUserInRole( session, role ) ) {
                 fireEvent( WikiSecurityEvent.PRINCIPAL_ADD, role, session );
-                if( log.isDebugEnabled() ) {
-                    log.debug( "Added authorizer role " + role.getName() + "." );
-                }
+                log.debug( "Added authorizer role {}.", role.getName() );
             // If web authorizer, test the request.isInRole() method also
             } else if ( request != null && authorizer instanceof WebAuthorizer ) {
                 final WebAuthorizer wa = ( WebAuthorizer )authorizer;
                 if ( wa.isUserInRole( request, role ) ) {
                     fireEvent( WikiSecurityEvent.PRINCIPAL_ADD, role, session );
-                    if ( log.isDebugEnabled() ) {
-                        log.debug( "Added container role " + role.getName() + "." );
-                    }
+                    log.debug( "Added container role {}.",role.getName() );
                 }
             }
         }

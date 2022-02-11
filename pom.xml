@@ -29,7 +29,7 @@
   <artifactId>jspwiki-builder</artifactId>
   <modelVersion>4.0.0</modelVersion>
   <name>Apache JSPWiki</name>
-  <version>2.11.1-SNAPSHOT</version>
+  <version>2.11.2-SNAPSHOT</version>
   <packaging>pom</packaging>
   <description>Apache JSPWiki is a leading open source WikiWiki engine, feature-rich
     and built around standard JEE components (Java, servlets, JSP).</description>
@@ -39,13 +39,13 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <project.build.outputTimestamp>2021-11-18T19:08:58Z</project.build.outputTimestamp> <!-- will be changed by release plugin during releases -->
+    <project.build.outputTimestamp>2021-12-15T16:14:07Z</project.build.outputTimestamp> <!-- will be changed by release plugin during releases -->
     <jdk.version>1.8</jdk.version>
     <jdk.javadoc.doclet.version>1.1.4</jdk.javadoc.doclet.version>
     <maven.version>3.5</maven.version>
 
     <akismet-java.version>1.02</akismet-java.version>
-    <awaitility.version>4.1.0</awaitility.version>
+    <awaitility.version>4.1.1</awaitility.version>
     <aws-java-sdk-kendra.version>1.12.59</aws-java-sdk-kendra.version>
     <commons-collections.version>4.4</commons-collections.version>
     <commons-fileupload.version>1.4</commons-fileupload.version>
@@ -66,36 +66,33 @@
     <jdom2.version>2.0.6</jdom2.version>
     <jetty.version>9.4.44.v20210927</jetty.version>
     <jrcs-diff.version>0.4.2</jrcs-diff.version>
-    <junit.version>5.8.1</junit.version>
-    <log4j.version>1.2.17</log4j.version>
-    <log4j2.version>2.14.1</log4j2.version>
-    <lucene.version>8.11.0</lucene.version>
-    <mockito.version>4.0.0</mockito.version>
+    <junit.version>5.8.2</junit.version>
+    <log4j2.version>2.17.1</log4j2.version>
+    <lucene.version>8.11.1</lucene.version> <!-- 9.0.0 and above require JDK >= 11 to execute -->
+    <mockito.version>4.2.0</mockito.version>
     <nekohtml.version>1.9.22</nekohtml.version>
     <oro.version>2.0.8</oro.version>
     <sandler.version>0.5</sandler.version>
-    <selenide.version>6.0.3</selenide.version>
+    <selenide.version>6.2.0</selenide.version>
     <slf4j.version>1.7.32</slf4j.version>
     <stripes.version>1.7.0-async-beta</stripes.version>
-    <tika.version>2.1.0</tika.version>
-    <tomcat.version>9.0.55</tomcat.version>
+    <tika.version>2.2.1</tika.version>
+    <tomcat.version>9.0.56</tomcat.version>
     <wro4j.version>1.8.0</wro4j.version> <!-- 1.9.0 and above require JDK >= 9 to execute -->
     <xmlrpc.version>2.0.1</xmlrpc.version>
 
     <plugin.antrun.version>3.0.0</plugin.antrun.version>
     <plugin.assembly.version>3.3.0</plugin.assembly.version>
     <plugin.clean.version>3.1.0</plugin.clean.version>
-    <plugin.compiler.version>3.8.1</plugin.compiler.version>
+    <plugin.compiler.version>3.9.0</plugin.compiler.version>
     <plugin.dependency.version>3.2.0</plugin.dependency.version>
-    <plugin.eclipse.version>2.10</plugin.eclipse.version>
     <plugin.enforcer.version>3.0.0</plugin.enforcer.version>
-    <plugin.idea.version>2.2.1</plugin.idea.version>
     <plugin.install.version>2.5.2</plugin.install.version>
-    <plugin.jar.version>3.2.0</plugin.jar.version>
+    <plugin.jar.version>3.2.2</plugin.jar.version>
     <plugin.javadoc.version>3.3.1</plugin.javadoc.version>
     <plugin.jxr.version>3.1.1</plugin.jxr.version>
     <plugin.project-info-reports.version>3.1.2</plugin.project-info-reports.version>
-    <plugin.release.version>3.0.0-M4</plugin.release.version>
+    <plugin.release.version>3.0.0-M5</plugin.release.version>
     <plugin.resources.version>3.2.0</plugin.resources.version>
     <plugin.source.version>3.2.1</plugin.source.version>
     <plugin.surefire.version>3.0.0-M5</plugin.surefire.version>
@@ -104,10 +101,10 @@
     <plugin.jspc.version>3.2.0</plugin.jspc.version>
     <plugin.checksum.version>1.11</plugin.checksum.version>
     <plugin.jslint.version>1.0.1</plugin.jslint.version>
-    <plugin.cargo.version>1.9.8</plugin.cargo.version>
+    <plugin.cargo.version>1.9.9</plugin.cargo.version>
     <plugin.clirr.version>2.8</plugin.clirr.version>
     <plugin.cobertura.version>2.7</plugin.cobertura.version>
-    <plugin.sonar.version>3.9.0.2155</plugin.sonar.version>
+    <plugin.sonar.version>3.9.1.2184</plugin.sonar.version>
     <plugin.sonar-report.version>0.1</plugin.sonar-report.version>
     <plugin.eclipse-lifecycle-mapping.version>1.0.0</plugin.eclipse-lifecycle-mapping.version>
     <maven.compiler.source>${jdk.version}</maven.compiler.source> <!-- override values from parent pom -->
@@ -128,6 +125,7 @@
     <module>jspwiki-event</module>
     <module>jspwiki-api</module>
     <module>jspwiki-bootstrap</module>
+    <module>jspwiki-cache</module>
     <module>jspwiki-main</module>
     <module>jspwiki-markdown</module>
     <module>jspwiki-tika-searchprovider</module>
@@ -137,6 +135,7 @@
     <module>jspwiki-war</module>
     <module>jspwiki-portable</module>
     <module>jspwiki-it-tests</module><!-- IT tests are launched only if -Pintegration-tests is given -->
+    <module>jspwiki-bom</module>
   </modules>
 
   <dependencyManagement> <!-- defines what configuration is going to be used if, and only if, the dependency is used -->
@@ -168,7 +167,25 @@
 
       <dependency>
         <groupId>com.vladsch.flexmark</groupId>
+        <artifactId>flexmark-ext-attributes</artifactId>
+        <version>${flexmark.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.vladsch.flexmark</groupId>
+        <artifactId>flexmark-ext-definition</artifactId>
+        <version>${flexmark.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.vladsch.flexmark</groupId>
         <artifactId>flexmark-ext-footnotes</artifactId>
+        <version>${flexmark.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.vladsch.flexmark</groupId>
+        <artifactId>flexmark-ext-tables</artifactId>
         <version>${flexmark.version}</version>
       </dependency>
 
@@ -254,12 +271,6 @@
         <groupId>jaxen</groupId>
         <artifactId>jaxen</artifactId>
         <version>${jaxen.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>log4j</groupId>
-        <artifactId>log4j</artifactId>
-        <version>${log4j.version}</version>
       </dependency>
 
       <dependency>
@@ -495,29 +506,6 @@
         </plugin>
 
         <plugin>
-          <artifactId>maven-eclipse-plugin</artifactId>
-          <version>${plugin.eclipse.version}</version>
-          <configuration>
-            <downloadSources>true</downloadSources>
-            <downloadJavadocs>true</downloadJavadocs>
-            <additionalConfig>
-              <file>
-                <name>.checkstyle</name>
-                <location>${maven.multiModuleProjectDirectory}/jspwiki-war/src/main/config/dev/jspwiki-checkstyle.xml</location>
-              </file>
-              <file>
-                <name>.settings/org.eclipse.jdt.core.prefs</name>
-                <location>${maven.multiModuleProjectDirectory}/jspwiki-war/src/main/config/dev/jspwiki-eclipse-codestyle.xml</location>
-              </file>
-            </additionalConfig>
-            <additionalProjectnatures>
-              <projectnature>net.sourceforge.metrics.nature</projectnature>
-              <projectnature>net.sf.eclipsecs.core.CheckstyleNature</projectnature>
-            </additionalProjectnatures>
-          </configuration>
-        </plugin>
-
-        <plugin>
           <artifactId>maven-enforcer-plugin</artifactId>
           <version>${plugin.enforcer.version}</version>
           <configuration>
@@ -532,15 +520,6 @@
                 <version>[${maven.version},)</version>
               </requireMavenVersion>
             </rules>
-          </configuration>
-        </plugin>
-
-        <plugin>
-          <artifactId>maven-idea-plugin</artifactId>
-          <version>${plugin.idea.version}</version>
-          <configuration>
-            <downloadSources>true</downloadSources>
-            <downloadJavadocs>true</downloadJavadocs>
           </configuration>
         </plugin>
 
@@ -560,7 +539,6 @@
               <additionalOption>-Xdoclint:none</additionalOption>
               <additionalOption>--allow-script-in-comments</additionalOption>
             </additionalOptions>
-            <author>${project.organization.name}</author>
             <bottom>Copyright (c) {inceptionYear}-{currentYear} ${project.organization.name}. All rights reserved.</bottom>
             <breakiterator>true</breakiterator>
             <detectJavaApiLink>false</detectJavaApiLink>
@@ -574,7 +552,6 @@
             <sourcetab>4</sourcetab>
             <quiet>true</quiet>
             <useStandardDocletOptions>true</useStandardDocletOptions>
-            <version>${project.version}</version>
           </configuration>
         </plugin>
 
@@ -719,7 +696,7 @@
             <dependency>
               <groupId>org.mockito</groupId>
               <artifactId>mockito-core</artifactId>
-              <version>3.12.4</version>
+              <version>4.1.0</version>
             </dependency>
           </dependencies>
         </plugin>
@@ -779,7 +756,7 @@
               <home>${project.build.directory}/tomcat9x</home>
               <properties>
                 <cargo.servlet.port>8080</cargo.servlet.port>
-                <cargo.jvmargs>-XX:MaxPermSize=512m -Xms256m -Xmx3072m -Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005 -XX:+DisableExplicitGC -Xverify:none -Djava.awt.headless=true</cargo.jvmargs>
+                <cargo.jvmargs>-Xms256m -Xmx3072m -Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005 -XX:+DisableExplicitGC -Xverify:none -Djava.awt.headless=true</cargo.jvmargs>
               </properties>
             </configuration>
             <!-- <deployables>

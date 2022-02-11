@@ -17,12 +17,111 @@ specific language governing permissions and limitations
 under the License.
 -->
 
+**2022-01-13  Juan Pablo Santos (juanpablo AT apache DOT org)**
+
+* _2.11.2-git-03_
+
+* Added [DefinitionExtension](https://github.com/vsch/flexmark-java/wiki/Extensions#definition-lists) and [TablesExtension](https://github.com/vsch/flexmark-java/wiki/Extensions#tables) to `jspwiki-markdown` in order to add support for definition lists and tables.
+
+* [JSPWIKI-802](https://issues.apache.org/jira/browse/JSPWIKI-802) - Markdown syntax Support: added Markdown support for WYSIWYG editor.
+    * Currently, can be activated by setting the `jspwiki.syntax.decorator` property to `org.apache.wiki.htmltowiki.syntax.markdown.MarkdownSyntaxDecorator`.
+    * Details at [Markdown support page](https://jspwiki-wiki.apache.org/Wiki.jsp?page=Markdown%20Support).
+    * Last item pending for full Markdown support is Plain Editor integration.
+
+* `XMLUserDatabase#getWikiNames()` now discards null and empty wiki names.
+    * It was discarding only `null` wiki names, but JDom returns an empty string (that is, not null) for missing attributes, which resulted in unreachable code.
+    * This change inlines with the logic of the UI on the registration form, which mandates a not empty value for the wiki name.
+    * Same on `JDBCUserDatabase#getWikiNames()` which seems to have been developed from the former (log message references XMLUserDatabase).
+
+* Dependency updates
+    * Selenide to 6.2.0, thanks to dependabot [#165](https://github.com/apache/jspwiki/pull/165)
+    * Maven release (3.0.0-M5) and cargo plugins (1.9.9), thanks to dependabot [#164](https://github.com/apache/jspwiki/pull/164), [#166](https://github.com/apache/jspwiki/pull/166)
+    * Maven compiler (3.9.0) and jar (3.2.2) plugins
+
+
+**2022-01-12  Dirk Frederickx (brushed AT apache DOT org)**
+
+* _2.11.2-git-02_
+
+* Protect the meta 'wikiUserName' tag against potential XSS attack.
+  (reported by Paulos Yibelo)
+
+
+**2021-12-31  Juan Pablo Santos (juanpablo AT apache DOT org)**
+
+* _2.11.2-git-01_
+
+* [JSPWIKI-1168](https://issues.apache.org/jira/projects/JSPWIKI/issues/JSPWIKI-1168) - Simplify required configuration to log on file: Added an unused rolling file appender configuration to `jspwiki.properties`, so switching log to file only requires referencing/overwritting a bit of configuration.
+
+* Added [AttributesExtension](https://github.com/vsch/flexmark-java/wiki/Extensions#attributes) to `jspwiki-markdown` in order to add support for [Markdown Extra attributes](https://michelf.ca/projects/php-markdown/extra/#spe-attr).
+
+* [JSPWIKI-1169](https://issues.apache.org/jira/projects/JSPWIKI/issues/JSPWIKI-1169) - Add Bill of materials module to build.
+
+* `DefaultReferenceManager` now only synchronizes when (un)serializing data, since the underlying maps used are already handling concurrency.
+
+* Some small refactors on htmltowiki decorators. Most notably, `<a>` syntax decorator only performs tasks related to syntax decoration.
+
+* Dependency updates
+    * Log4J2 to 2.17.1, thanks to dependabot [#161](https://github.com/apache/jspwiki/pull/161)
+    * Lucene to 8.11.1, thanks to dependabot [#162](https://github.com/apache/jspwiki/pull/162)
+    * Mockito to 4.2.0, thanks to dependabot [#160](https://github.com/apache/jspwiki/pull/160)
+    * Selenide to 6.1.2
+    * Tika to 2.2.1, thanks to dependabot [#163](https://github.com/apache/jspwiki/pull/163)
+
+
+**2021-12-13  Juan Pablo Santos (juanpablo AT apache DOT org)**
+
+* _2.11.1-git-02_
+
+* Decoupled `XHtmlElementToWikiTranslator` from jspwiki syntax, so it will be able in a near future to output other wiki syntaxes.
+    * `XHtmlElementToWikiTranslator` acts as a chain in a chain of responsability pattern, delegating to a `SyntaxDecorator` the output of specific wiki syntaxes.
+    * Refactored classes may still change a little.
+
+* Dependency updates
+    * Mockito to 4.1.0, thanks to dependabot [#152](https://github.com/apache/jspwiki/pull/152)
+    * Log4J2 to 2.15.0, thanks to [Paulino Calderon](https://github.com/cldrn) [#155](https://github.com/apache/jspwiki/pull/155) and then to 2.16.0, thanks to dependabot [#157](https://github.com/apache/jspwiki/pull/157)
+    * Sonar maven plugin to 3.9.1.2184, thanks to dependabot [#153](https://github.com/apache/jspwiki/pull/153)
+    * Tomcat to 9.0.56
+
+**2021-12-02  Juan Pablo Santos (juanpablo AT apache DOT org)**
+
+* _2.11.1-git-01_
+
+* Cache management moved to a new maven module, jspwiki-cache
+    * Cache backend can now be overriden by providing a custom CachingManager via [classmappings-extra.xml](https://jspwiki-wiki.apache.org/Wiki.jsp?page=JSPWikiPublicAPI#section-JSPWikiPublicAPI-RegisteringCustomManagersInTheWikiEngine)
+    * Default cache manager remains ehcache-based, with default configuration file located at ehcache-jspwiki.xml
+    * Tests wanting to invalidate cache(s) should call either `Engine#shutdown()` or `Engine#getManager( CachingManager.class ).shutdown()`
+    * The `jspwiki.cache.config-file` setting on the `jspwiki[-custom].properties` file allows to use a custom ehcache configuration file, located elsewhere on classpath
+    * Fixed [JSPWIKI-873](https://issues.apache.org/jira/projects/JSPWIKI/issues/JSPWIKI-873) - AttachmentManager#getAllAttachments() does not return more than exactly 1000 attachments
+
+* Introduced `TextUtil#get[Required|String]Property( Properties, String key, String deprecatedKey[, String defval] )` to allow deprecation of properties, so they can be removed later on
+    * Deprecated key will be looked first and, if found, a warning will be logged asking to move to the new property
+    * If there's no deprecated key on the properties set, the normal key will be looked, and if not found, the default value will be returned (or exception thrown)
+    * The idea is to move related configuration towards common "namespaces"
+    * A few properties are deprecated
+        * `jspwiki.usePageCache` -> `jspwiki.cache.enable` should be used instead
+        * `jspwiki.attachmentProvider` -> `jspwiki.attachment.provider` should be used instead
+        * `jspwiki.attachmentProvider.adapter.impl` -> `jspwiki.attachment.provider.adapter.impl` should be used instead
+
+* `WikiEngine#initComponent()` now asks the `mappedClass` if it is `Initializable` instead of asking the `requestedClass` on `classmappings.xml`.
+    * This allows to decouple `Initializable` from the mapped managers, as it should only matter if their implementations are `Initializable` in order to init them.
+
+* Moved site generation to [jspwiki-site's Jenkinsfile](https://github.com/apache/jspwiki-site/blob/jbake/Jenkinsfile)
+    * This second build is decoupled from the main one, so CI feedback is gathered faster
+
+* Dockerfile's maven build does not rely on jspwiki-main:tests being available on a repo, thus avoiding [#1](https://jspwiki-wiki.apache.org/Wiki.jsp?page=Common%20problems%20when%20building%20JSPWiki#section-Common+problems+when+building+JSPWiki-JspwikiMainJarTestsX.Y.ZNotFoundAtJspwikiMarkdown) when building new versions
+
+* Dependency updates
+    * Awaitility to 4.1.1, thanks to dependabot [#152](https://github.com/apache/jspwiki/pull/152)
+    * JUnit to 5.8.2
+    * Selenide to 6.1.1
+
 **2021-11-18  Juan Pablo Santos (juanpablo AT apache DOT org)**
 
 * _2.11.0-git-14_
 
 * [JSPWIKI-1160](https://issues.apache.org/jira/browse/JSPWIKI-1160) - Ensure JSPWiki builds with JDKs 8, 11 and 17
-  
+
 * Dependency updates
     * Lucene to 8.11.0
 
@@ -71,7 +170,7 @@ under the License.
 * First stab at `XHtmlElementToWikiTranslator` refactor, so it'll be easier in the future to make it output other types of wiki syntaxes
 
 * Dependency updates, provided by dependabot
-    * Jetty-all to 9.4.44.v20210927 [#139](https://github.com/apache/jspwiki/pull/139) 
+    * Jetty-all to 9.4.44.v20210927 [#139](https://github.com/apache/jspwiki/pull/139)
     * Lucene to 8.10.0 [#143](https://github.com/apache/jspwiki/pull/143)
     * Mockito to 4.0.0 [#144](https://github.com/apache/jspwiki/pull/144)
     * Selenide to 5.25.0 [#138](https://github.com/apache/jspwiki/pull/138)
@@ -112,7 +211,7 @@ under the License.
 * _2.11.0-git-08_
 
 * [JSPWIKI-1143](https://issues.apache.org/jira/browse/JSPWIKI-1143) - Allow SpamFilter to exclude certain users/groups from checks
-    * `jspwiki.filters.spamfilter.allowedgroups` property can be used to set a comma separated list of groups that will bypass the filter 
+    * `jspwiki.filters.spamfilter.allowedgroups` property can be used to set a comma separated list of groups that will bypass the filter
 
 * Denounce plugin checks for valid URLs
 
@@ -140,8 +239,8 @@ under the License.
     * 3.- JSPWiki custom property files
     * 4.- JSPWiki cascading properties
     * 5.- System properties
-    * With the later ones taking precedence over the previous ones. To avoid leaking system information, only System 
-      environment and properties beginning with `jspwiki` (case unsensitive) are taken into account. 
+    * With the later ones taking precedence over the previous ones. To avoid leaking system information, only System
+      environment and properties beginning with `jspwiki` (case unsensitive) are taken into account.
     * Also, to ease docker integration, System env properties containing "_" are turned into ".". F.ex.,
       `ENV jspwiki_fileSystemProvider_pageDir` would be loaded as `jspwiki.fileSystemProvider.pageDir`.
 
@@ -157,7 +256,7 @@ under the License.
 * _2.11.0-git-06_
 
 * [JSPWIKI-795](https://issues.apache.org/jira/browse/JSPWIKI-795) - Update Logging subsystem to Log4J2
-    * Log4J2 is the new logging framework used by JSPWiki. Although all Log4J calls are transparently routed to Log4J2, 
+    * Log4J2 is the new logging framework used by JSPWiki. Although all Log4J calls are transparently routed to Log4J2,
       the configuration inside jspwiki.properties has changed, so installations with customized logging configuration will
       need to be set up again.
     * Existing 3rd party plugins, filters and providers will continue to work as expected, as Log4J calls will be routed
@@ -183,14 +282,10 @@ under the License.
 
 * _2.11.0-git-05_
 
-* [JSPWIKI-1145](https://issues.apache.org/jira/browse/JSPWIKI-1146) - Add [AWS Kendra as a Search Provider](https://jspwiki-wiki.apache.org/Wiki.jsp?page=KendraSearchProvider)
+* [JSPWIKI-1145](https://issues.apache.org/jira/browse/JSPWIKI-1145) - Weak one-way hash used
     * Merged [PR #51](https://github.com/apache/jspwiki/pull/51), contributed by [takalat](https://github.com/takalat), [samhareem](https://github.com/samhareem), thanks!
 
-* Dependency & plugin updates provided by dependabot (PRs [#34](https://github.com/apache/jspwiki/pull/34),
-  [#35](https://github.com/apache/jspwiki/pull/35), [#39](https://github.com/apache/jspwiki/pull/39),
-  [#52](https://github.com/apache/jspwiki/pull/52), [#55](https://github.com/apache/jspwiki/pull/55),
-  [#56](https://github.com/apache/jspwiki/pull/56), [#57](https://github.com/apache/jspwiki/pull/57)
-  and [#59](https://github.com/apache/jspwiki/pull/59)), most notably
+* Dependency & plugin updates provided by dependabot (PRs [#34](https://github.com/apache/jspwiki/pull/34), [#35](https://github.com/apache/jspwiki/pull/35), [#39](https://github.com/apache/jspwiki/pull/39), [#52](https://github.com/apache/jspwiki/pull/52), [#55](https://github.com/apache/jspwiki/pull/55), [#56](https://github.com/apache/jspwiki/pull/56), [#57](https://github.com/apache/jspwiki/pull/57) and [#59](https://github.com/apache/jspwiki/pull/59)), most notably
     * HSQLDB to 2.6.0
     * JUnit to 5.7.1
     * Mockito to 3.9.0
@@ -207,7 +302,7 @@ under the License.
 * [JSPWIKI-1144](https://issues.apache.org/jira/browse/JSPWIKI-1144) - Minor performance improvement
     * Merged [PR #36](https://github.com/apache/jspwiki/pull/36), contributed by [Arturo Bernal](https://github.com/arturobernalg), thanks!
 
-* [JSPWIKI-1147](https://issues.apache.org/jira/browse/JSPWIKI-1147) - The button "Clear user preferences" 
+* [JSPWIKI-1147](https://issues.apache.org/jira/browse/JSPWIKI-1147) - The button "Clear user preferences"
 doesn't clear user preferences
 
 **2021-01-11  Juan Pablo Santos (juanpablo AT apache DOT org)**
@@ -218,7 +313,7 @@ doesn't clear user preferences
     * Merged [PR #32](https://github.com/apache/jspwiki/pull/32), contributed by [Arturo Bernal](https://github.com/arturobernalg), thanks!
 
 * `PropertyReader` logs stacktrace if unable to load the `jspwiki.properties` file
-  
+
 * `WikiEngine` unregisters all event delegates from `WikiEventManager` on shutdown. Under some circumstances, unit tests
 using a `TestEngine` could end up processing events using managers registered by previous `TestEngine`s.
 
@@ -231,13 +326,7 @@ using a `TestEngine` could end up processing events using managers registered by
 
 * _2.11.0-git-02_
 
-* Dependency updates provided by dependabot (PRs [#18](https://github.com/apache/jspwiki/pull/18), 
-  [#19](https://github.com/apache/jspwiki/pull/19), [#20](https://github.com/apache/jspwiki/pull/20), 
-  [#21](https://github.com/apache/jspwiki/pull/21), [#22](https://github.com/apache/jspwiki/pull/22),
-  [#23](https://github.com/apache/jspwiki/pull/23), [#24](https://github.com/apache/jspwiki/pull/24),
-  [#25](https://github.com/apache/jspwiki/pull/25), [#26](https://github.com/apache/jspwiki/pull/26), 
-  [#27](https://github.com/apache/jspwiki/pull/27), [#28](https://github.com/apache/jspwiki/pull/28),
-  [#29](https://github.com/apache/jspwiki/pull/29) and [#30](https://github.com/apache/jspwiki/pull/30)), most notably
+* Dependency updates provided by dependabot (PRs [#18](https://github.com/apache/jspwiki/pull/18), [#19](https://github.com/apache/jspwiki/pull/19), [#20](https://github.com/apache/jspwiki/pull/20), [#21](https://github.com/apache/jspwiki/pull/21), [#22](https://github.com/apache/jspwiki/pull/22), [#23](https://github.com/apache/jspwiki/pull/23), [#24](https://github.com/apache/jspwiki/pull/24), [#25](https://github.com/apache/jspwiki/pull/25), [#26](https://github.com/apache/jspwiki/pull/26), [#27](https://github.com/apache/jspwiki/pull/27), [#28](https://github.com/apache/jspwiki/pull/28), [#29](https://github.com/apache/jspwiki/pull/29) and [#30](https://github.com/apache/jspwiki/pull/30)), most notably
     * jsp-api to 2.3.3
     * Selenide to 5.17.2
 
@@ -303,7 +392,7 @@ using a `TestEngine` could end up processing events using managers registered by
   is all that is needed to generate the binaries. As this takes some more time, is only needed when upgrading tomcat and
   needs to download artifacts not present on Maven's central repo, it is not enabled by default.
 
-* Jenkinsfile uses JDK 11 to perform the build, as this is now the minimum [required by SonarQube](https://sonarcloud.io/documentation/appendices/end-of-support/). 
+* Jenkinsfile uses JDK 11 to perform the build, as this is now the minimum [required by SonarQube](https://sonarcloud.io/documentation/appendices/end-of-support/).
   The build itself still requires at least JDK 1.8.
 
 * Dependency updates
@@ -381,7 +470,7 @@ using a `TestEngine` could end up processing events using managers registered by
         * Log configuration
 
 * Begin to prepare [JSPWIKI-795](https://issues.apache.org/jira/projects/JSPWIKI/issues/JSPWIKI-795) - Update logging subsystem in JSPWiki
-    * Log4J will now be configured only if present in classpath. Right now this means always, but once 
+    * Log4J will now be configured only if present in classpath. Right now this means always, but once
     the logging subsystem is updated and in order to allow backwards compatibility with existing custom
     extensions, it will have to be explicitly added.
 
@@ -397,31 +486,31 @@ using a `TestEngine` could end up processing events using managers registered by
 
 * [JSPWIKI-303](https://issues.apache.org/jira/browse/JSPWIKI-303): [JSPWiki API](https://jspwiki-wiki.apache.org/Wiki.jsp?page=JSPWikiPublicAPI) library creation
     * SPI to retrieve / create objects from the `o.a.w.api.core` package
-    * it is possible to provide custom implementations of objects from the `o.a.w.api.core` package 
-        * for a custom `Engine`, an implementation of `o.a.w.api.spi.EngineSPI`, and set the 
-        `jspwiki.provider.impl.engine` property on the `jspwiki-[custom].properties` file with the 
-        fully qualified name of the implementation 
-        * for a custom `Context`, an implementation of `o.a.w.api.spi.ContextSPI`, and set the 
-        `jspwiki.provider.impl.context` property on the `jspwiki-[custom].properties` file with the 
-        fully qualified name of the implementation 
-        * for a custom `Session`, an implementation of `o.a.w.api.spi.SessionSPI`, and set the 
-        `jspwiki.provider.impl.session` property on the `jspwiki-[custom].properties` file with the 
-        fully qualified name of the implementation 
-        * for custom `Page` or `Attachment`, an implementation of `o.a.w.api.spi.ContentsSPI`, and set the 
-        `jspwiki.provider.impl.contents` property on the `jspwiki-[custom].properties` file with the 
-        fully qualified name of the implementation 
-        * for custom `Acl` or `AclEntry`, an implementation of `o.a.w.api.spi.AclsSPI`, and set the 
-        `jspwiki.provider.impl.acls` property on the `jspwiki-[custom].properties` file with the 
+    * it is possible to provide custom implementations of objects from the `o.a.w.api.core` package
+        * for a custom `Engine`, an implementation of `o.a.w.api.spi.EngineSPI`, and set the
+        `jspwiki.provider.impl.engine` property on the `jspwiki-[custom].properties` file with the
+        fully qualified name of the implementation
+        * for a custom `Context`, an implementation of `o.a.w.api.spi.ContextSPI`, and set the
+        `jspwiki.provider.impl.context` property on the `jspwiki-[custom].properties` file with the
+        fully qualified name of the implementation
+        * for a custom `Session`, an implementation of `o.a.w.api.spi.SessionSPI`, and set the
+        `jspwiki.provider.impl.session` property on the `jspwiki-[custom].properties` file with the
+        fully qualified name of the implementation
+        * for custom `Page` or `Attachment`, an implementation of `o.a.w.api.spi.ContentsSPI`, and set the
+        `jspwiki.provider.impl.contents` property on the `jspwiki-[custom].properties` file with the
+        fully qualified name of the implementation
+        * for custom `Acl` or `AclEntry`, an implementation of `o.a.w.api.spi.AclsSPI`, and set the
+        `jspwiki.provider.impl.acls` property on the `jspwiki-[custom].properties` file with the
         fully qualified name of the implementation
 
 * [JSPWIKI-806](https://issues.apache.org/jira/browse/JSPWIKI-806) (EntityManager Proposal): add the possibility of loading custom managers on `WikiEngine`
-    * `WikiEngine` will look on classpath for an `ini/classmappings-extra.xml` file, with the same structure as 
+    * `WikiEngine` will look on classpath for an `ini/classmappings-extra.xml` file, with the same structure as
     `ini/classmappings.xml`
     * if found, will register each `requestedClass` with its correspondent `mappedClass`
     * these custom manager must have a no-arg constructor
     * if there's a need to perform some initialization tasks querying the `Engine`, the custom manager should
     implement `o.a.w.api.engine.Initializable` and perform those tasks there
-    
+
 * `SisterSites.jsp` now honours page ACLs
 
 **2020-03-25  Juan Pablo Santos (juanpablo AT apache DOT org)**
@@ -431,8 +520,8 @@ using a `TestEngine` could end up processing events using managers registered by
 * [JSPWIKI-303](https://issues.apache.org/jira/browse/JSPWIKI-303): JSPWiki-API library creation
     * `Page` deals with ACLs
 
-* Refactor `WikiEngine` initialization, in order to prepare for building and configuring custom 
-managers (somewhat related to [JSPWIKI-806](https://issues.apache.org/jira/browse/JSPWIKI-806) - EntityManager Proposal) 
+* Refactor `WikiEngine` initialization, in order to prepare for building and configuring custom
+managers (somewhat related to [JSPWIKI-806](https://issues.apache.org/jira/browse/JSPWIKI-806) - EntityManager Proposal)
 
 * Dependency updates
     * Lucene to 8.5.0
@@ -444,15 +533,15 @@ managers (somewhat related to [JSPWIKI-806](https://issues.apache.org/jira/brows
 
 * [JSPWIKI-303](https://issues.apache.org/jira/browse/JSPWIKI-303): JSPWiki-API library creation
     * added compatibility to page / attachment providers not using the public API
-        * `jspwiki.pageProvider` should be set to `WikiPageAdapterProvider` and then `jspwiki.pageProvider.adapter.impl` 
+        * `jspwiki.pageProvider` should be set to `WikiPageAdapterProvider` and then `jspwiki.pageProvider.adapter.impl`
         to the actual page provider
-        * `jspwiki.attachmentProvider` should be set to `WikiAttachmentAdapterProvider` and then `jspwiki.attachmentProvider.adapter.impl` 
+        * `jspwiki.attachmentProvider` should be set to `WikiAttachmentAdapterProvider` and then `jspwiki.attachmentProvider.adapter.impl`
         to the actual attachment provider
         * see `WikiProviderAdaptersTest` on the jspwiki-210-adapters module for an example
     * `Page` does not deal with ACLs yet
     * SPI to create objects from the `o.a.w.api.core` package still needs to be done
 
-* Added more helper methods to `TestEngine` to ease building customized instances (again, see `WikiProviderAdaptersTest` on the 
+* Added more helper methods to `TestEngine` to ease building customized instances (again, see `WikiProviderAdaptersTest` on the
 jspwiki-210-adapters module for an example)
 
 * Dependency updates
@@ -466,10 +555,10 @@ jspwiki-210-adapters module for an example)
 
 * [JSPWIKI-303](https://issues.apache.org/jira/browse/JSPWIKI-303): JSPWiki-API library creation
     * Extracted `jspwiki-event` and `jspwiki-api` maven modules from `jspwiki-main`
-    * Created `jspwiki-210-adapters` and `jspwiki-210-test-adaptees` maven modules to ensure backwards 
+    * Created `jspwiki-210-adapters` and `jspwiki-210-test-adaptees` maven modules to ensure backwards
     compatibility with custom plugin / filters / page providers not using public API
     * JSPWiki Plugins, Filters and Page Providers are using the public API
-    * Use of `o.a.w.api.core.Command` instead of `o.a.w.ui.Command` and of `o.a.w.api.search.QueryItem` and 
+    * Use of `o.a.w.api.core.Command` instead of `o.a.w.ui.Command` and of `o.a.w.api.search.QueryItem` and
     `o.a.w.api.search.SearchResult` instead of their counterparts from the `o.a.w.search` package
     * Start to introduce `Page`, `Attachment` and `Context` instead of `WikiPage`, `WikiAttachment` and `WikiContext`
     * JSPWiki API still needs some polishing
@@ -488,7 +577,7 @@ jspwiki-210-adapters module for an example)
 
 * Internal classes' refactors in order to break some class / packages cycles.
 
-* Updated Tomcat to 9.0.31 in order to get JDK 8 level to compile and run JSPs when using the Cargo 
+* Updated Tomcat to 9.0.31 in order to get JDK 8 level to compile and run JSPs when using the Cargo
   plugin. Baseline is still servlet 3.1 (i.e.: Tomcat 8.x), though.
 
 **2002-03-04  Dirk Frederickx (brushed AT apache DOT org)**
